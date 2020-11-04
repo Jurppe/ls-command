@@ -1,0 +1,45 @@
+ls-komento Linuxissa
+
+1.	Taustaa
+
+Linuxin ls-komento on komentorivillä (Shell) ajettava komento, joka tulee jokaisen Linux-jakelun mukana. Komennon perustoiminnallisuus on näyttää käyttäjälle lista tiedostoista ja kansioista siitä kansiosta, missä käyttäjä sillä hetkellä sijaitsee komentorivillä. Komentorivi on komentotulkki, joka toimii rajapintana käyttäjän (ja hänen syötteidensä) sekä käyttöjärjestelmän välillä. Yleisin käytetty komentorivi on bash. Kun mikä tahansa syöte kirjoitetaan komentorivin komentoikkunaan – oli se sitten ls tai ei – suorittaa komentorivi kolmivaiheisen etsintäprosessin. Prosessissa tarkastellaan, onko kyseiselle syötteelle määritelty jokin alias järjestelmässä. Mikäli aliasta ei löydy, jatkaa komentorivi suoritusta. Mikäli ensimmäinen sana on jokin järjestelmälle varattu komento (järjestelmälle varatut komennot sijaitsevat suoraan komentorivin sisällä, eikä niille tarvita erillistä ohjelmaa suoritukseen) ajaa järjestelmä määritellyn komennon. Mikäli syötteelle ei löydy aliasta eikä se ole järjestelmälle varattu osanen, yrittää komentorivi täsmätä syötteen jonkun prosessi-id:n (PID) kanssa. Nämä PID:t ovat listattuna Linuxin PATH:issa. PATH sisältää puolipisteillä erotellun listan tälle listalle lisätyistä hakemistoista. Komentorivi käy jokaisen näistä hakemistoista läpi kerrallaan, ja koittaa löytää syötettä täsmäävän vastaavuuden kansion sisältä. Syötteen ls-kohdalla se löytyy ’/usr/local/bin’-kansiosta.
+
+2.	ls-komennon tehtävät
+
+Annettuaan syötteen ’ls’ komentoriville ilman erillisiä lippuja, komentotulkki tulkitsee komennon seuraavanlaisesti: ’ls [nykyinen hakemisto]’. Tässä tapauksessa ls tulostaa komentoriville listauksen kaikista kansiossa olevista tiedostoista ja kansioista. Tulostuksen valmistuttua tulostaa ls vielä rivinvaihdon ja palauttaa komento-oikeuden käyttäjälle. Kuten minkä tahansa muunkin ohjelman mukaan voi antaa parametrejä, niin myös ls tukee näitä. Mukaan voi antaa esimerkiksi kansion nimen josta haku tulisi suorittaa. Esimerkiksi komennolla 'ls koulu' tulostaa komento kansion koulu sisällön, mikäli tällainen kansio sijaitsee nykyisessä kansiossa. Minkä tahansa kansion sisällön voi tulostaa kunhan antaa tarpeeksi tarkan osoitteen tälle kansiolle. Myöskin tietyntyyppisten tiedostojen tulostus on mahdollista. Esimerkiksi jos käyttäjä haluaa tulostaa VAIN otsaketiedostot hänen C-kurssiltaan, voi hän käyttää komentoa 'ls *.h'. Tällöin komento tulostaa vain tiedostopäätteeseen '.h'-päättyvät tiedostot. 
+
+Käydään seuraavaksi läpi joitain lisäparametrejä mitä komennolle voi antaa:
+
+2.1 -a
+
+Tätä lippua käyttäessa listaa ls myös kaikki vakiona piilotetut tiedostot ja kansiot (esimerkiksi .ssh - kansiota ei normaalisti näytetä, sillä se alkaa pisteellä)
+
+2.2 -l
+
+Tätä lippua käyttäessä tulostaa komento näkyviin jokaisen tiedoston omalle rivilleen, sisältäen seuraavat tiedot jokaisesta tiedostosta/kansiosta:
+* Tiedoston oikeudet (luku/luku+kirjoitus/suoritus)
+* Kovien linkkien (pointteri) lukumäärä tiedostoon
+* Tiedoston omistaja ja ryhmä
+* Tiedoston koko
+* Tiedoston luonnin/viimeisen muokkauksen päivämäärä
+* Tiedoston koko nimi
+
+2.3 --sort
+
+Tätä lippua käyttäessä voi käyttäjä määritellä minkä mukaan tiedostot/kansiot järjestetään tulostaessa. Seuraavana lista eri järjestysvaihtoehdoista (pitkä komento ensin, suluissa saman komennon lyhenne):
+--sort=extension (-X) - järjestä aakkosjärjestykseen tiedostopäätteen mukaan
+--sort=size (-S) - järjestä tiedoston koon mukaan
+--sort=time (-t) - järjestä tiedoston viimeisimmän muokkauspäivämäärän mukaan
+--sort=version (-v) - järjestä tiedosto sen version (mikäli tämä tieto on olemassa) mukaan
+
+2.4 -R
+
+Tämä lippu tulostaa nykyisen kansion, sekä kaikki alikansiot rekursiivisesti. Eli myös alikansioiden alikansiot tulostetaan ja niin edespäin - tiedät kyllä.
+
+
+Muita tässä työssä pois jätettyjä komentoja voi tarkastella esimerkiksi osoitteesta https://man7.org/linux/man-pages/man1/ls.1.html
+
+
+3. ls-komennon lähdekoodi
+
+Osoitteesta https://github.com/wertarbyte/coreutils/blob/master/src/ls.c löytyvä ls-komennon lähdekoodi on yli 4000 riviä pitkä. Tiedostossa on määritelty valtava määrä erilaisia funktioita, enumeita ja muuta tietoa joista on vaikea saada selvää asiaan vihkiytymättä. Kuitenkin tiedostoa tarkastellessa on huomattava, että suuri osa tiedostosta on erilaisiin tilanteisiin varautumista. Iffejä on ripoteltu sinne sun tänne ja erinäisiin tilanteisiin ollaan varauduttu jatkuvasti. Riviltä 1645 alkava switch-case järkäle on vastuussa erilaisten lippuihin (esitelty kappaleessa 2) varautuminen. Esimerkiksi kirjaimella "R" asetetaan totuusarvo 'recursive' todeksi; täten mahdollistaen rekursiivisen kutsun kansioiden ja tiedostojen läpikäymiseen. Myös esimerkiksi vakiona piilotetut tiedostot tuottavat lisää työtä koodissa, sillä näillekin pitää suorittaa omia funktioita (sekä näitä ohittaessa että tulostaessa).
